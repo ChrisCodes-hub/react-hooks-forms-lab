@@ -1,34 +1,31 @@
-import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
-import Filter from "../components/Filter";
-import ShoppingList from "../components/ShoppingList";
-
-const testData = [
-  { id: 1, name: "Yogurt", category: "Dairy" },
-  { id: 2, name: "Pomegranate", category: "Produce" },
-  { id: 3, name: "Lettuce", category: "Produce" },
-  { id: 4, name: "String Cheese", category: "Dairy" },
-  { id: 5, name: "Swiss Cheese", category: "Dairy" },
-  { id: 6, name: "Cookies", category: "Dessert" },
-];
-
-// Filter
-const noop = () => {};
-test("uses a prop of 'search' to display the search term in the input field", () => {
-  render(<Filter search="testing" onSearchChange={noop} />);
-
-  expect(screen.queryByPlaceholderText(/Search/).value).toBe("testing");
+// Additional tests for Filter component
+test("renders the correct default option in the select dropdown", () => {
+  render(<Filter onCategoryChange={noop} />);
+  expect(screen.queryByText("Filter by category")).toBeInTheDocument();
 });
 
-test("calls the onSearchChange callback prop when the input is changed", () => {
-  const onChange = jest.fn();
-  render(<Filter search="testing" onSearchChange={onChange} />);
+test("calls the onCategoryChange callback prop when a category is selected", () => {
+  const onCategoryChange = jest.fn();
+  render(<Filter onCategoryChange={onCategoryChange} />);
 
-  fireEvent.change(screen.queryByPlaceholderText(/Search/), {
-    target: { value: "testing123" },
+  fireEvent.change(screen.queryByRole("combobox"), {
+    target: { value: "Dairy" },
   });
 
-  expect(onChange).toHaveBeenCalled();
+  expect(onCategoryChange).toHaveBeenCalled();
+  expect(onCategoryChange).toHaveBeenCalledWith(expect.any(Object));
+});
+
+test("renders all category options in the select dropdown", () => {
+  render(<Filter onCategoryChange={noop} />);
+  const options = screen.queryAllByRole("option");
+  expect(options).toHaveLength(4);
+  expect(options.map((option) => option.value)).toEqual([
+    "All",
+    "Produce",
+    "Dairy",
+    "Dessert",
+  ]);
 });
 
 test("the input field acts as a controlled input", () => {
